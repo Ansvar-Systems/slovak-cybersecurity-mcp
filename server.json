@@ -1,0 +1,11 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "eu.ansvar/slovak-cybersecurity-mcp",
+  "description": "Query SK-CERT (Slovak National Cybersecurity Agency) cybersecurity guidelines, advisories, and frameworks",
+  "repository": { "url": "https://github.com/Ansvar-Systems/slovak-cybersecurity-mcp", "source": "github" },
+  "homepage": "https://ansvar.eu",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "keywords": ["sk-cert", "slovak-cybersecurity", "cybersecurity", "slovakia", "information-security", "compliance", "mcp", "ansvar"],
+  "packages": [{ "registryType": "npm", "identifier": "@ansvar/slovak-cybersecurity-mcp", "version": "0.1.0", "transport": { "type": "stdio" } }]
+}
