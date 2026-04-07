@@ -17,6 +17,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { searchGuidance, getGuidance, searchAdvisories, getAdvisory, listFrameworks } from "./db.js";
+import { buildCitation } from "./utils/citation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -113,9 +114,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (name) {
       case "sk_cyber_search_guidance": { const p = SearchGuidanceArgs.parse(args); return textContent({ results: searchGuidance({ query: p.query, type: p.type, series: p.series, status: p.status, limit: p.limit }), count: searchGuidance({ query: p.query, type: p.type, series: p.series, status: p.status, limit: p.limit }).length }); }
-      case "sk_cyber_get_guidance": { const p = GetGuidanceArgs.parse(args); const doc = getGuidance(p.reference); return doc ? textContent(doc) : errorContent(`Guidance document not found: ${p.reference}`); }
+      case "sk_cyber_get_guidance": {
+        const p = GetGuidanceArgs.parse(args);
+        const doc = getGuidance(p.reference);
+        if (!doc) return errorContent(`Guidance document not found: ${p.reference}`);
+        const _citation = buildCitation(
+          p.reference,
+          (doc as Record<string, unknown>).title as string || p.reference,
+          "sk_cyber_get_guidance",
+          { reference: p.reference },
+        );
+        return textContent({ ...doc as Record<string, unknown>, _citation });
+      }
       case "sk_cyber_search_advisories": { const p = SearchAdvisoriesArgs.parse(args); const r = searchAdvisories({ query: p.query, severity: p.severity, limit: p.limit }); return textContent({ results: r, count: r.length }); }
-      case "sk_cyber_get_advisory": { const p = GetAdvisoryArgs.parse(args); const a = getAdvisory(p.reference); return a ? textContent(a) : errorContent(`Advisory not found: ${p.reference}`); }
+      case "sk_cyber_get_advisory": {
+        const p = GetAdvisoryArgs.parse(args);
+        const a = getAdvisory(p.reference);
+        if (!a) return errorContent(`Advisory not found: ${p.reference}`);
+        const _citation = buildCitation(
+          p.reference,
+          (a as Record<string, unknown>).title as string || p.reference,
+          "sk_cyber_get_advisory",
+          { reference: p.reference },
+        );
+        return textContent({ ...a as Record<string, unknown>, _citation });
+      }
       case "sk_cyber_list_frameworks": { const f = listFrameworks(); return textContent({ frameworks: f, count: f.length }); }
       case "sk_cyber_about": return textContent({ name: SERVER_NAME, version: pkgVersion, description: "SK-CERT (Slovak National Cybersecurity Agency) MCP server. Provides access to Slovak cybersecurity guidelines, security advisories, and NIS2 implementation materials.", data_source: "SK-CERT (https://www.sk-cert.sk/) and National Security Authority — NBU (https://www.nbu.gov.sk/)", coverage: { guidance: "SK-CERT guidelines, NBU recommendations, NIS2 implementation materials for Slovakia", advisories: "SK-CERT security advisories and alerts", frameworks: "National cybersecurity frameworks, NIS2 compliance, critical infrastructure protection" }, tools: TOOLS.map(t => ({ name: t.name, description: t.description })) });
       default: return errorContent(`Unknown tool: ${name}`);
