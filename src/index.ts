@@ -120,11 +120,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!doc) return errorContent(`Guidance document not found: ${p.reference}`);
         const _citation = buildCitation(
           p.reference,
-          (doc as Record<string, unknown>).title as string || p.reference,
+          (doc as unknown as Record<string, unknown>).title as string || p.reference,
           "sk_cyber_get_guidance",
           { reference: p.reference },
         );
-        return textContent({ ...doc as Record<string, unknown>, _citation });
+        return textContent({ ...doc as unknown as Record<string, unknown>, _citation });
       }
       case "sk_cyber_search_advisories": { const p = SearchAdvisoriesArgs.parse(args); const r = searchAdvisories({ query: p.query, severity: p.severity, limit: p.limit }); return textContent({ results: r, count: r.length }); }
       case "sk_cyber_get_advisory": {
@@ -133,11 +133,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!a) return errorContent(`Advisory not found: ${p.reference}`);
         const _citation = buildCitation(
           p.reference,
-          (a as Record<string, unknown>).title as string || p.reference,
+          (a as unknown as Record<string, unknown>).title as string || p.reference,
           "sk_cyber_get_advisory",
           { reference: p.reference },
         );
-        return textContent({ ...a as Record<string, unknown>, _citation });
+        return textContent({ ...a as unknown as Record<string, unknown>, _citation });
       }
       case "sk_cyber_list_frameworks": { const f = listFrameworks(); return textContent({ frameworks: f, count: f.length }); }
       case "sk_cyber_about": return textContent({ name: SERVER_NAME, version: pkgVersion, description: "SK-CERT (Slovak National Cybersecurity Agency) MCP server. Provides access to Slovak cybersecurity guidelines, security advisories, and NIS2 implementation materials.", data_source: "SK-CERT (https://www.sk-cert.sk/) and National Security Authority — NBU (https://www.nbu.gov.sk/)", coverage: { guidance: "SK-CERT guidelines, NBU recommendations, NIS2 implementation materials for Slovakia", advisories: "SK-CERT security advisories and alerts", frameworks: "National cybersecurity frameworks, NIS2 compliance, critical infrastructure protection" }, tools: TOOLS.map(t => ({ name: t.name, description: t.description })) });
